@@ -3,7 +3,7 @@ import sys
 import logging
 from loading_saving import load_data, save_df_to_csv
 from clean import clean_chess, who_clean
-from statistics import get_df_stats
+from statistics import get_df_stats, get_column_stats
 from questions_answers import *
 
 log = logging.getLogger(__name__)
