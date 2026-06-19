@@ -41,3 +41,4 @@ if __name__ == "__main__":
     q1(chess_clean_copy, log)
     q2(chess_clean_copy, chart_save_path , log)
     q3(who_clean_copy, log)
+    q4(chess_clean_copy, log)

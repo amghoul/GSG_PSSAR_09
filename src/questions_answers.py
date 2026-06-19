@@ -175,7 +175,7 @@ def q3(df: pd.DataFrame, log: logging.Logger)-> None:
     Pearson Correlation between schooling & life_expectancy: 0.716
     Spearman Correlation between schooling & life_expectancy: 0.780
 
-    Because your Spearman score is notably higher than your Pearson score, the relationship between 
+    Because the Spearman score is notably higher than the Pearson score, the relationship between 
     schooling and life expectancy is curved (non-linear) or contains outliers. The two metrics move up 
     together reliably, but not in a perfectly straight line.
 
@@ -207,3 +207,41 @@ def q3(df: pd.DataFrame, log: logging.Logger)-> None:
     partial_corr = pg.partial_corr(data=df, x='schooling', y='life_expectancy', covar='gdp')
     print(f"The partial correlation after controlling GDP is: {partial_corr.round(3)}")
 
+def q4(df: pd.DataFrame, log: logging.Logger)-> None:
+    """
+    Answering Q4: Chi-squared test — rating group vs win rate, with effect size
+    === Chi-Squared Test Results ===
+    Chi-squared Statistic: 278.674
+    p-value:               0.000000
+    Degrees of Freedom:    4
+    Cramér's V (Effect):   0.083
+
+    A p-value of 0.000000 means the probability that this pattern happened by pure random chance is zero. 
+    The relationship is highly statistically significant. You can confidently state that a player's rating 
+    group does change their probability of winning.
+    Cramér's V tells you how much it actually matters in the real world.Any value below 0.10 is considered a 
+    negligible or very weak effect.The Reason: Because the dataset has thousands of rows, the Chi-squared 
+    test becomes so sensitive that it flags tiny, minor differences as "highly significant." 
+    Cramér's V corrects for this sample-size bias and reveals that grouping players by raw rating 
+    alone doesn't strongly predict the game's outcome.
+    Your metrics prove a highly statistically significant but practically negligible relationship, 
+    showing that while absolute rating groups mathematically affect win rates, their real-world predictive 
+    impact is incredibly weak.
+    """
+    log.info(f"################ Q4 answering:") 
+    import numpy as np
+    import pandas as pd
+    from scipy import stats
+
+    df['rating_group'] = pd.qcut(df['white_rating'], q=3, labels=['Low', 'Medium', 'High'])
+    contingency_table = pd.crosstab(df['rating_group'], df['winner'])
+    chi2, p_val, dof, expected = stats.chi2_contingency(contingency_table)
+    n = contingency_table.sum().sum() 
+    min_dim = min(contingency_table.shape) - 1  
+    cramers_v = np.sqrt(chi2 / (n * min_dim))
+
+    print("=== Chi-Squared Test Results ===")
+    print(f"Chi-squared Statistic: {chi2:.3f}")
+    print(f"p-value:               {p_val:.6f}")
+    print(f"Degrees of Freedom:    {dof}")
+    print(f"Cramér's V (Effect):   {cramers_v:.3f}")
