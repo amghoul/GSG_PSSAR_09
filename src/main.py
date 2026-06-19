@@ -3,7 +3,7 @@ import sys
 import logging
 from loading_saving import load_data, save_df_to_csv
 from clean import clean_chess, who_clean
-from statistics import get_df_stats, get_column_stats
+from statistics_calc import get_df_stats, get_column_stats
 from questions_answers import *
 
 log = logging.getLogger(__name__)
@@ -40,4 +40,4 @@ if __name__ == "__main__":
     
     q1(chess_clean_copy, log)
     q2(chess_clean_copy, chart_save_path , log)
-    #q3(who_clean_copy, log)
+    q3(who_clean_copy, log)

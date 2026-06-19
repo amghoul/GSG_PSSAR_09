@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
 import os
-from statistics import get_df_stats, get_column_stats
+from statistics_calc import get_df_stats, get_column_stats
 import logging
 import matplotlib.pyplot as plt
 #import seaborn as sns
 from scipy import stats
+import pingouin as pg
 
 
 
@@ -137,17 +138,72 @@ def q2_for_column(df: pd.DataFrame, col_name: str, path: str, log: logging.Logge
     log.info(f"Log skew: {df[col_name+'_log'].skew():.2f}") 
     log.info(f"SQRT skew: {df[col_name+'_sqrt'].skew():.2f}") 
 
-
+def q3(df: pd.DataFrame, log: logging.Logger)-> None:
     """Answer Q3: WHO correlation matrix + one confounder discussion
+    Top POSITIVE:
+    schooling                          0.716
+    income_composition_of_resources    0.694
+    bmi                                0.560
+
+    Top NEGATIVE:
+    adult_mortality        -0.696
+    hiv/aids               -0.557
+    thinness_10-19_years   -0.473
+
+    Pearson Correlation between schooling & life_expectancy: 0.716
+    Spearman Correlation between schooling & life_expectancy: 0.780
+
+    The partial correlation after controlling GDP is:             n      r         CI95      p_val
+                                                        pearson  2938  0.651  [0.63, 0.67]    0.0
+    
+    Analysis:
+    Based on the numeric analysis computed from the correlation matrix,
+    the three variables with the highest positive linear relationship to life_expectancy are:
+    schooling (Correlation: 0.716)
+    income_composition_of_resources (Correlation: 0.694)
+    bmi (Correlation: 0.560)
+
+    Top Negative CorrelationsThese variables move in the opposite direction of life expectancy. 
+    As these values increase, life expectancy drops:
+    adult_mortality (-0.696): The strongest overall factor. High death rates among adults aged 15 to 60 
+    directly drop a nation's average lifespan calculation.
+    hiv/aids (-0.557): A strong negative driver. High rates of deaths from HIV/AIDS heavily lower life 
+    expectancy, especially across developing regions in the historical dataset.
+    thinness_10-19_years (-0.473): Shows a clear link between childhood/adolescent malnutrition and lower 
+    overall country lifespans.
+
+    Pearson Correlation between schooling & life_expectancy: 0.716
+    Spearman Correlation between schooling & life_expectancy: 0.780
+
+    Because your Spearman score is notably higher than your Pearson score, the relationship between 
+    schooling and life expectancy is curved (non-linear) or contains outliers. The two metrics move up 
+    together reliably, but not in a perfectly straight line.
+
+    GDP is NOT a full confounder: Your original Pearson correlation between schooling and life expectancy 
+    was 0.716. After controlling for GDP, the partial correlation (r) drops slightly to 0.651. 
+    Because it did not drop sharply toward 0, it proves that schooling has a strong, independent relationship 
+    with life expectancy that national wealth alone cannot explain.
+    Confidence Interval (CI95 = [0.63, 0.67]): You can be 95% confident that the true background correlation 
+    always sits between 0.63 and 0.67.Significance Level (p_val = 0.0): A value of 0.0 means the 
+    probability of this relationship happening by pure chance is practically zero, rendering the independent 
+    impact of education highly statistically significant.
     """
+    log.info(f"################ Q3 answering:") 
     # Correlations with life expectancy
     corrs = df.select_dtypes('number').corr()['life_expectancy'].drop('life_expectancy')
     top_pos = corrs.nlargest(3)
     top_neg = corrs.nsmallest(3)
-    print('Top POSITIVE:')
+    log.info('Top POSITIVE:')
     print(top_pos.round(3))
-    print('Top NEGATIVE:')
+    log.info('Top NEGATIVE:')
     print(top_neg.round(3))
-    # adult_mortality -0.696
-    # hiv/aids -0.564
-    # thinness_5-9_yrs -0.460
+
+    pearson_corr = df['schooling'].corr(df['life_expectancy'], method='pearson')
+    spearman_corr = df['schooling'].corr(df['life_expectancy'], method='spearman')
+
+    log.info(f"Pearson Correlation between schooling & life_expectancy: {pearson_corr:.3f}")
+    log.info(f"Spearman Correlation between schooling & life_expectancy: {spearman_corr:.3f}")
+
+    partial_corr = pg.partial_corr(data=df, x='schooling', y='life_expectancy', covar='gdp')
+    print(f"The partial correlation after controlling GDP is: {partial_corr.round(3)}")
+
