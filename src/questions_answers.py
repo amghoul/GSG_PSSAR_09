@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 #import seaborn as sns
 from scipy import stats
 import pingouin as pg
+from scipy.stats import t as t_dist
+from typing import Tuple
 
 
 
@@ -245,3 +247,35 @@ def q4(df: pd.DataFrame, log: logging.Logger)-> None:
     print(f"p-value:               {p_val:.6f}")
     print(f"Degrees of Freedom:    {dof}")
     print(f"Cramér's V (Effect):   {cramers_v:.3f}")
+
+def confidence_interval(data: pd.Series, confidence: float=0.95) -> Tuple[float, float]:
+    """Compute the confidence interval of a series
+    """
+    n = len(data); mean = data.mean(); se = stats.sem(data)
+    h = se * t_dist.ppf((1 + confidence) / 2., n - 1)
+    return mean - h, mean + h
+
+def bootstrap_ci(data: pd.Series, n_boot: int=1000, confidence: float=0.95)-> np.ndarray:
+    rng = np.random.default_rng(42)
+    means = [rng.choice(data, len(data), replace=True).mean() for _ in range(n_boot)]
+    a = (1 - confidence) / 2
+    return np.percentile(means, [a*100, (1-a)*100])
+
+def q5(df: pd.DataFrame, log: logging.Logger)-> None:
+    """
+    Answering Q5: 95% CIs for rated vs unrated turns — parametric + bootstrap
+    for parametric --> 95% CI: (61.4, 62.5)
+    Bootstrap --> 95% CI: (61.4, 62.5)  
+
+    These results mean that the average length of a rated chess game is between 61.4 and 62.5 moves, 
+    and because the two confidence intervals match perfectly, the sample size is large enough to 
+    make the findings incredibly reliable.
+    This means you can be 95% confident that the true population average for rated chess games falls squarely inside this narrow range.
+    """
+    log.info(f"################ Q5 answering:") 
+    rated_turns = df[df['rated'] == True]['turns']
+    lo, hi = confidence_interval(rated_turns)
+    print(f"for parametric --> 95% CI: ({lo:.1f}, {hi:.1f})") 
+    
+    lo_b, hi_b = bootstrap_ci(rated_turns.values)
+    print(f"Bootstrap --> 95% CI: ({lo_b:.1f}, {hi_b:.1f})")
