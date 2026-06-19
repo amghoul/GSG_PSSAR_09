@@ -2,6 +2,9 @@ import os
 import sys
 import logging
 from loading_saving import load_data, save_df_to_csv
+from clean import clean_chess, who_clean
+from statistics import get_df_stats
+from questions_answers import *
 
 log = logging.getLogger(__name__)
 
@@ -31,4 +34,6 @@ if __name__ == "__main__":
     save_df_to_csv(clean_chess,os.path.join(csv_save_processed,name_ds_chess + "_processed.csv" ), log)
     save_df_to_csv(clean_who, os.path.join(csv_save_processed, name_ds_who + "_processed.csv"), log)
 
+    chess_clean_copy = clean_chess.copy()
+    who_clean_copy = clean_who.copy()
     
