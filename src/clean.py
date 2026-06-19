@@ -78,6 +78,8 @@ def who_clean(df: pd.DataFrame)->pd.DataFrame:
     cleaned_df = df.pipe(
         who_lowering_and_remove_spaces).pipe(
             who_rename_columns).pipe(
-                who_remove_nulls_5th_percentile).pipe(
-                  who_remove_col).pipe(who_add_yearwise_means)
+                lambda x: x #who_remove_nulls_5th_percentile
+                ).pipe(
+                  lambda x: x #who_remove_col
+                  ).pipe(who_add_yearwise_means)
     return cleaned_df

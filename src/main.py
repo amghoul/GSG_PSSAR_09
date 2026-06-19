@@ -13,6 +13,7 @@ if __name__ == "__main__":
     csv_save_processed = os.path.join("data","processed")
     name_ds_chess="chess_games"
     name_ds_who="who_data"
+    chart_save_path = os.path.join("output","charts")
     
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     
@@ -37,3 +38,6 @@ if __name__ == "__main__":
     chess_clean_copy = clean_chess.copy()
     who_clean_copy = clean_who.copy()
     
+    q1(chess_clean_copy, log)
+    q2(chess_clean_copy, chart_save_path , log)
+    #q3(who_clean_copy, log)
